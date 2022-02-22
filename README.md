@@ -1,1 +1,1 @@
-# billing-service
+# Тестовое задание SellerX
