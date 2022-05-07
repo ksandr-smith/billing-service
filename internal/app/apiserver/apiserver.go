@@ -2,34 +2,20 @@ package apiserver
 
 import (
 	"billing-service/internal/app/store/sqlstore"
-	"database/sql"
+	postgresql "billing-service/pkg/client"
+	"context"
 	"net/http"
 )
 
 func Start(config *Config) error {
-	db, err := newDB(config.DatabaseURL)
+	postgres, err := postgresql.NewClient(context.TODO(), 3, *config.Store)
 	if err != nil {
 		return err
 	}
 
-	defer db.Close()
-
-	store := sqlstore.New(db)
+	store := sqlstore.New(postgres)
 
 	srv := newServer(store)
 
 	return http.ListenAndServe(config.BindAddr, srv)
-}
-
-func newDB(databaseURL string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", databaseURL)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }

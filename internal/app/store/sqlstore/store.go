@@ -2,18 +2,17 @@ package sqlstore
 
 import (
 	"billing-service/internal/app/store"
-	"database/sql"
-
+	postgresql "billing-service/pkg/client"
 	_ "github.com/lib/pq"
 )
 
 type Store struct {
-	db                    *sql.DB
+	db                    postgresql.Client
 	walletRepository      *WalletRepository
 	transactionRepository *TransactionRepository
 }
 
-func New(db *sql.DB) *Store {
+func New(db postgresql.Client) *Store {
 	return &Store{
 		db: db,
 	}

@@ -2,6 +2,7 @@ package sqlstore
 
 import (
 	"billing-service/internal/app/model"
+	"context"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -12,15 +13,15 @@ type TransactionRepository struct {
 	store *Store
 }
 
-func (r *TransactionRepository) Create(t *model.Transaction) error {
-	return r.store.db.QueryRow(
+func (r *TransactionRepository) Create(ctx context.Context, t *model.Transaction) error {
+	return r.store.db.QueryRow(ctx,
 		"INSERT INTO transactions (wallet_id, transaction_type, amount) VALUES ($1, $2, $3) RETURNING uuid, created",
 		t.WalletID,
 		t.Desc,
 		t.Amount).Scan(&t.UUID, &t.Timestamp)
 }
 
-func (r *TransactionRepository) FindByWalletId(walletId int, query url.Values) ([]model.Transaction, error) {
+func (r *TransactionRepository) FindByWalletId(ctx context.Context, walletId int, query url.Values) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	sql := fmt.Sprintf("SELECT * FROM transactions WHERE wallet_id = %d", walletId)
 
@@ -59,7 +60,7 @@ func (r *TransactionRepository) FindByWalletId(walletId int, query url.Values) (
 		sql = fmt.Sprintf("%s LIMIT %d OFFSET %d", sql, perPage, (currentPage-1)*perPage)
 	}
 
-	rows, err := r.store.db.Query(sql)
+	rows, err := r.store.db.Query(ctx, sql)
 	if err != nil {
 		return nil, err
 	}
